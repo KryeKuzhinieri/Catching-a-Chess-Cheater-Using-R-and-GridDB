@@ -1,0 +1,20 @@
+[Event "Casual Correspondence game"]
+[Site "https://lichess.org/gwhvMXUI"]
+[Date "2022.10.25"]
+[White "Krye_Kuzhinieri"]
+[Black "lichess AI level 8"]
+[Result "0-1"]
+[UTCDate "2022.10.25"]
+[UTCTime "10:19:18"]
+[WhiteElo "1500"]
+[BlackElo "?"]
+[Variant "Standard"]
+[TimeControl "-"]
+[ECO "C20"]
+[Opening "King's Pawn Game"]
+[Termination "Normal"]
+[Annotator "lichess.org"]
+
+1. e4 e5 { C20 King's Pawn Game } 2. g3 Bc5 3. Bg2 Nf6 4. Ne2 O-O 5. O-O Nc6 6. c3 d6 7. d4 Bb6 8. Be3 d5 9. exd5 Nxd5 10. dxe5 Nxe3 11. Qxd8 Rxd8 12. fxe3 Bxe3+ 13. Kh1 Nxe5 14. Na3 c6 15. Nf4 f6 16. Rae1 Bb6 17. Re2 Bg4 18. Ree1 Rd2 19. h3 Bc8 20. Rd1 Rxb2 21. Rd6 Rxa2 22. Nb1 Nc4 23. Rd2 { White resigns. } 0-1
+
+
