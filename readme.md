@@ -5,7 +5,8 @@ Before we start with the analysis, let’s firstly start by understanding some c
 Secondly, the **Elo rating** is a metric used in chess to assign each chess player a strength score. For simplicity reasons, one can think of the Elo score as a relative score to the rest of the players in the field and that the higher the value, the better the player is.\
 Thirdly, a method that can be used to measure the accuracy of a person’s moves is the **centipawn loss**. This is a strategy to assess how bad a player’s moves were compared to the ones suggested by chess engines. Further, the most commonly used methodology is to compute the average centipawn loss which means how much the player deviated from the actual engine’s best recommendation.\
 Mathematically, it can be defined as follows:\
-$$acl =\left\lvert\frac{\sum_{i=1}^{n} (x - x_i)}{n}\right\rvert$$ 
+$$acl =\frac{ \sum\limits_{i=1}^{n} |x - x_i|}{n}$$ 
+
 
 where $x$ is the evaluation after following the engine’s move where as $x_i$ is the actual evaluation after player made a move.\
 Lastly, we need to define some assumptions before starting the analysis. If a player has an average loss of $0$, then the player has followed the moves as suggested by the engine 100% of the time. Hence, the larger the loss the weaker the player is. For this example, we will consider an average value lower than $15$ as cheating. 
