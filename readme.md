@@ -8,7 +8,7 @@ Mathematically, it can be defined as follows:\
 $$acl =\frac{ \sum\limits_{i=1}^{n} |x - x_i|}{n}$$ 
 
 
-where $x$ is the evaluation after following the engine’s move where as $x_i$ is the actual evaluation after player made a move.\
+where $x$ is the evaluation after following the engine’s move whereas $x_i$ is the actual evaluation after player made a move.\
 Lastly, we need to define some assumptions before starting the analysis. If a player has an average loss of $0$, then the player has followed the moves as suggested by the engine 100% of the time. Hence, the larger the loss the weaker the player is. For this example, we will consider an average value lower than $15$ as cheating. 
 
 ## Analysis
