@@ -22,7 +22,7 @@ library(bigchess)
 library(RJDBC)
 ```
 
-Since the process of engine calculation takes some time, it is always better to store the results in the database so that we won’t need to rerun the algorithm all the time. We will be using [GridDB](https://griddb.net/en/downloads/) because it is lightweight and fast. I am using version 5.0.0 for this tutorial.To connect to the database, we use the following R code
+Since the process of engine calculation takes some time, it is always better to store the results in the database so that we won’t need to rerun the algorithm all the time. Besides this, we can build our own chess game database where we can keep information about the games we played. We will be using [GridDB](https://griddb.net/en/downloads/) because it is lightweight and fast. I am using version 5.0.0 for this tutorial.To connect to the database, we use the following R code
 
 ```r
 driver <- JDBC(
