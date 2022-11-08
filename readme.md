@@ -143,7 +143,7 @@ We can filter the data by running the following query `SELECT * FROM chess_table
 | Black   | 79%        | 12% | 9%| <span style="color:green">**31.27**</span>|
 
 
-And the last game is a game where I played against the computer. In this case we want to detect that black cheated. So, we expect a very low **acl**.
+The next game is a game where I played against the computer. In this case we want to detect that black cheated. So, we expect a very low **acl**.
 
 <iframe src="https://lichess.org/embed/game/gwhvMXUI?theme=auto&bg=auto" width=600 height=397 frameborder=0></iframe>
 
