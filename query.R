@@ -21,12 +21,15 @@ QUERY_3 <- "SELECT * FROM chess_table_depth_20 WHERE Black == 'lichess AI level 
 game_3 <- dbGetQuery(conn, QUERY_3)
 game_3_black <- eval(parse(text = game_3$black_stats))
 
-dataset <- data.frame(
-  player = c(rep("Me", 3), rep("World Champion", 3), rep("Chess Engine", 3)),
-  moves = c(names(game_1_white), names(game_2_white), names(game_3_black)),
-  values = c(game_1_white, game_2_white, game_3_black)
-)
+QUERY_4 <- "SELECT * FROM chess_table_depth_20 WHERE Black == 'Niemann, Hans Moke'"
+game_4 <- dbGetQuery(conn, QUERY_4)
+game_4_black <- eval(parse(text = game_4$black_stats))
 
+dataset <- data.frame(
+  player = c(rep("Me", 3), rep("World Champion", 3), rep("Chess Engine", 3), rep("Niemann", 3)),
+  moves = c(names(game_1_white), names(game_2_white), names(game_3_black), names(game_4_black)),
+  values = c(game_1_white, game_2_white, game_3_black, game_4_black)
+)
 
 ggplot(dataset, aes(fill = moves, y = values, x = player)) +
   geom_bar(position = "dodge", stat = "identity") +

@@ -12,7 +12,7 @@ where $x$ is the evaluation after following the engine’s move whereas $x_i$ is
 Lastly, we need to define some assumptions before starting the analysis. If a player has an average loss of $0$, then the player has followed the moves as suggested by the engine 100% of the time. Hence, the larger the loss the weaker the player is. For this example, we will consider an average value lower than $15$ as cheating. 
 
 ## Analysis
-To follow along all you need to do is to install [R](https://cran.r-project.org/) and [stockfish](https://stockfishchess.org/download/) on your computer. Then, load the necessary R pacakges
+To follow along all you need to do is to install [R](https://cran.r-project.org/) and [Stockfish](https://stockfishchess.org/download/) on your computer. I am using R version 4.2.2 and Stockfish version 14.1. However, other versions should be working fine to test this experiment. Then, load the necessary R packages
 
 ```r
 library(dplyr)
@@ -22,7 +22,7 @@ library(bigchess)
 library(RJDBC)
 ```
 
-Since the process of engine calculation takes some time, it is always better to store the results in the database so that we won’t need to rerun the algorithm all the time. We will be using [GridDB](https://griddb.net/en/downloads/) because it is lightweight and fast. To connect to the database, we use the following R code
+Since the process of engine calculation takes some time, it is always better to store the results in the database so that we won’t need to rerun the algorithm all the time. We will be using [GridDB](https://griddb.net/en/downloads/) because it is lightweight and fast. I am using version 5.0.0 for this tutorial.To connect to the database, we use the following R code
 
 ```r
 driver <- JDBC(
@@ -61,7 +61,7 @@ f5e5 d6e5 h3g4 f6g4 g2e4 g7g6 g1g2 f7f5 e4f3 g4f6 e1h1 g8g7 g2f2 e5e4 f3e2 b7b6 
 g5f4 d1d4 f4f3 e2f1 g7f7 f1h3 f7g6 a4a5 b6a5 c4c5 f6e8 d6d7 e8c7 c5c6 g6g5 d4e4 c7d5 e4d4"
 ```
 
-Next, let's calculate the average centipawn loss by getting the score of each value after a move. For instance, after white makes a move, we get the evaluation of the engine and we store the value.
+Next, let's calculate the average centipawn loss by getting the score of each value after a move. For instance, after white makes a move, we get the evaluation of the engine and we store the value. In essence, different engine depths return different evaluations; that is, the higher the engine depth the more accurate is the evaluation provided by Stockfish. Here we are using engine_depth of 20.
 
 ```r
 all_moves <- str_split(lan, " ")[[1]]
@@ -119,11 +119,12 @@ black_average_cp <- abs(mean(game_results$black_difference))
 ```
 
 ## Results
+The analysis above has completed successfully and now we have a chess database in our hands. By running `SELECT * FROM chess_table_depth_20` you can get various information for each of the games played. Among others, the database stores information such as: event name, location where games were played, date, round, player names, and the centipawn statistics for each player.
 Now, let's test the performance of our model. The following is a game I played online on Lichess. I know that I and my opponent haven't cheated and we can use this to test our model. 
 
 <iframe src="https://lichess.org/embed/game/kOMi8fle?theme=auto&bg=auto" width=600 height=397 frameborder=0></iframe>
 
-We can filter the data score by fetching the game from GridDB by running `SELECT * FROM chess_table_depth_30 WHERE Black == 'D1stknightmaster'`. This yields the following results:
+We can filter the data score by fetching the game from GridDB by running `SELECT * FROM chess_table_depth_20 WHERE Black == 'D1stknightmaster'`. This yields the following results:
 
 | Player      | Precise Move | Average Move | Bad Move | Average Loss
 | ----------- | ----------- | ----------- | ----------- | ----------- |
@@ -134,7 +135,7 @@ The second game is a game played between two of the strongest chess players in t
 
 <iframe src="https://lichess.org/embed/game/1gIiW0OQ?theme=auto&bg=auto#65" width=600 height=397 frameborder=0></iframe>
 
-We can filter the data by running the following query `SELECT * FROM chess_table_depth_30 WHERE Black == 'Nakamura, Hikaru'` from where we get the following scores:
+We can filter the data by running the following query `SELECT * FROM chess_table_depth_20 WHERE Black == 'Nakamura, Hikaru'` from where we get the following scores:
 
 | Player      | Precise Move | Average Move | Bad Move | Average Loss
 | ----------- | ----------- | ----------- | ----------- | ----------- |
@@ -146,7 +147,7 @@ And the last game is a game where I played against the computer. In this case we
 
 <iframe src="https://lichess.org/embed/game/gwhvMXUI?theme=auto&bg=auto" width=600 height=397 frameborder=0></iframe>
 
-We filter the data by running `SELECT * FROM chess_table_depth_30 WHERE Black == 'lichess AI level 8'`. The results are:
+We filter the data by running `SELECT * FROM chess_table_depth_20 WHERE Black == 'lichess AI level 8'`. The results are:
 
 | Player      | Precise Move | Average Move | Bad Move | Average Loss
 | ----------- | ----------- | ----------- | ----------- | ----------- |
@@ -155,8 +156,20 @@ We filter the data by running `SELECT * FROM chess_table_depth_30 WHERE Black ==
 
 Here we can clearly observe that the player using black pieces has cheated since the value of the loss is smaller than the one we set to be acceptable.
 
+The last game I want to analyze together is the infamous one between world champion Mangus Carlsen and the young American prodigy Hans Niemann. This game is in particular significant because Carlsen accused Niemann of cheating. Although a lot has been said on the topic, this [report](https://www.chess.com/blog/CHESScom/hans-niemann-report) by Chess.com does not believe Hans cheated in this very game. However, since we have build our model, let's test it. We filter the data by running `SELECT * FROM chess_table_depth_20 WHERE Black == 'Niemann, Hans Moke'`. 
+
+<iframe src="https://lichess.org/embed/game/jMaLMDvn?theme=auto&bg=auto"
+width=600 height=397 frameborder=0></iframe>
+
+| Player      | Precise Move | Average Move | Bad Move | Average Loss
+| ----------- | ----------- | ----------- | ----------- | ----------- |
+| White      | 65%       | 23%|  12% | <span style="color:green">**28.01**</span>|
+| Black   | 79%        | 14% | 7%| <span style="color:green">**20.47**</span>|
+
+Hence, it can be argued that Carlsen did not have a good day overall and that Niemann's performance was not extraordinary. However, this technique does not work well with selective cheating. To improve this model, you can find some useful ideas in the concluding part of this article.
+
 Lastly, I want to display how all players compare to one another. Below you can see that the engine clearly outperforms the world champion. However, the biggest difference is not in the fact that it plays always the best moves, but how rarely a simple online engine makes a mistake. Moreover, an amateur player like myself does on average play a bad move 40% of the time.
-![Player Comparison](Images/comparision.png)
+![Player Comparison](Images/4_plot.png)
 
 ## Conclusion
 In this article we focused on detecting blatant cheating in chess. Although the statistical model we created is simple, it achieves good results in cases where players follow most of the engine moves. However, this model does not work well for selective or smart cheating because a good player does not need to copy all the engine moves but a couple of them in critical moments. The following can be done to improve the model:

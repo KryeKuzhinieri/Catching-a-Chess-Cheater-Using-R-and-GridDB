@@ -19,7 +19,7 @@ calculateEngineCentipawnLoss <- function(
     engine_path,
     limit_ranges = c(0, 25, 75, Inf),
     limit_names = c("Precise Move", "Average Move", "Bad Move"),
-    engine_depth = 30
+    engine_depth = 20
   ) {
   all_moves <- str_split(lan, " ")[[1]]
 
@@ -103,7 +103,12 @@ calculateEngineCentipawnLoss <- function(
 }
 
 engine_path <- "/usr/games/stockfish"
-list_of_games_to_analyze <- c("Data/normal_game.pgn", "Data/stockfish8.pgn", "Data/carlsen_hikaru.pgn")
+list_of_games_to_analyze <- c(
+  "Data/normal_game.pgn",
+  "Data/stockfish8.pgn",
+  "Data/carlsen_hikaru.pgn",
+  "Data/carlsen_niemann.pgn" 
+)
 
 dbListTables(conn)
 for (i in seq_along(list_of_games_to_analyze)) {
