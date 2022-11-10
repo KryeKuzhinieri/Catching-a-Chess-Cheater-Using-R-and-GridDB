@@ -1,10 +1,10 @@
 # Catching a Chess Cheater Using R and GridDB
 ## Introduction
 Chess is an ancient game played by millions of people everyday. Chess, like many other games, has seen a boom with the enhancement of technology due various playing platforms giving players the chance to interact, learn, and exchange ideas with one another. Nonetheless, the most drastic improvement chess has seen over the last couple of decades is the introduction of the artificial intelligence based models which have become so good that even the best player in the world cannot compete with them. However, there are two sides to every coin, and in this case computers have given impostors the ability to cheat while playing other humans causing issues of fair play in many online chess tournaments. So, is there anyway cheating can be detected and if so what are the methods to catch a cheater? In the following sections, we will explore how to build a simple algorithm for detecting **blatant** cheating.\
-Before we start with the analysis, let’s firstly start by understanding some chess terminology. Firstly, a **centipawn** value is a numeric value that a chess engine uses to evaluate a chess position. The standard is that the simplest piece such as the pawn is considered to be worth of 100 cp. Similarly, the queen which is the most valuable piece is worth 900 cp.\
+Before we start with the analysis, let’s firstly start by understanding some chess terminology. Firstly, a **centipawn** value is a numeric value that a chess engine uses to evaluate a chess position. The standard is that the simplest piece such as the pawn is considered to be worth 100 cp. Similarly, the queen which is the most valuable piece is worth 900 cp.\
 Secondly, the **Elo rating** is a metric used in chess to assign each chess player a strength score. For simplicity reasons, one can think of the Elo score as a relative score to the rest of the players in the field and that the higher the value, the better the player is.\
 Thirdly, a method that can be used to measure the accuracy of a person’s moves is the **centipawn loss**. This is a strategy to assess how bad a player’s moves were compared to the ones suggested by chess engines. Further, the most commonly used methodology is to compute the average centipawn loss which means how much the player deviated from the actual engine’s best recommendation.\
-Mathematically, it can be defined as follows:\
+Mathematically, it can be defined as follows:
 $$acl =\frac{ \sum\limits_{i=1}^{n} |x - x_i|}{n}$$ 
 
 
@@ -12,7 +12,7 @@ where $x$ is the evaluation after following the engine’s move whereas $x_i$ is
 Lastly, we need to define some assumptions before starting the analysis. If a player has an average loss of $0$, then the player has followed the moves as suggested by the engine 100% of the time. Hence, the larger the loss the weaker the player is. For this example, we will consider an average value lower than $15$ as cheating. 
 
 ## Analysis
-To follow along all you need to do is to install [R](https://cran.r-project.org/) and [Stockfish](https://stockfishchess.org/download/) on your computer. I am using R version 4.2.2 and Stockfish version 14.1. However, other versions should be working fine to test this experiment. Then, load the necessary R packages
+To follow along all you need to do is to install [R](https://cran.r-project.org/) and [Stockfish](https://stockfishchess.org/download/) on your computer. I am using R version 4.2.2 and Stockfish version 14.1. However, other versions should be working fine. The complete code for this project can be found in [this repository](https://github.com/KryeKuzhinieri/Catching-a-Chess-Cheater-Using-R-and-GridDB). Next, load the necessary R packages
 
 ```r
 library(dplyr)
@@ -22,17 +22,18 @@ library(bigchess)
 library(RJDBC)
 ```
 
-Since the process of engine calculation takes some time, it is always better to store the results in the database so that we won’t need to rerun the algorithm all the time. Besides this, we can build our own chess game database where we can keep information about the games we played. We will be using [GridDB](https://griddb.net/en/downloads/) because it is lightweight and fast. I am using version 5.0.0 for this tutorial.To connect to the database, we use the following R code
+Since the process of engine calculation takes some time, it is always better to store the results in the database so that we won’t need to rerun the algorithm all the time. Besides this, we can build our own chess game database where we can keep information about the games we played. We will be using [GridDB](https://docs.griddb.net/gettingstarted/using-apt/) because it is lightweight and fast. I am using version 5.0.0 for this tutorial. Moreover, we are using gridstore-jdbc-5.1.0 as the driver for RJDBC which can be downloaded by clicking [here](https://search.maven.org/search?q=a:gridstore-jdbc). To connect to the database, we use the following R code
 
 ```r
 driver <- JDBC(
   driverClass = "com.toshiba.mwcloud.gs.sql.Driver",
-  classPath = "/usr/share/java/gridstore-jdbc-4.6.0.jar"
+  classPath = "/usr/share/java/gridstore-jdbc-5.1.0.jar"
 )
 conn <- dbConnect(driver, "jdbc:gs://127.0.0.1:20001/myCluster/public", "admin", "admin")
 ```
 
-Chess games are usually stored in a .pgn format where they store all the moves each player makes with extra information such as the rating of the players, piece colors, and more. To read the data we can utilize the package called `bigchess`. 
+Chess games are usually stored in a .pgn format where they store all the moves each player makes with extra information such as the rating of the players, piece colors, and more. We will be using only 4 pgn games in this project, but you can download large chess datasets for active and inactive players in [this website](https://www.pgnmentor.com/files.html). Besides, it only requires that you place the data in the *Data* folder and by running the *cheat_detector.R* script all of the statistics and the rest of the pgn information for your large chess database will be calculated. Let's simplify the tutorial by only taking one match called *normal_game.pgn*.
+To read the data we can utilize the package called `bigchess`.
 
 ```r
 game <- read.pgn(con = file("normal_game.pgn"), stat.moves = F, extract.moves = 0)
@@ -119,8 +120,17 @@ black_average_cp <- abs(mean(game_results$black_difference))
 ```
 
 ## Results
-The analysis above has completed successfully and now we have a chess database in our hands. By running `SELECT * FROM chess_table_depth_20` you can get various information for each of the games played. Among others, the database stores information such as: event name, location where games were played, date, round, player names, and the centipawn statistics for each player.
-Now, let's test the performance of our model. The following is a game I played online on Lichess. I know that I and my opponent haven't cheated and we can use this to test our model. 
+The analysis above has completed successfully and now we have a chess database in our hands. By running `SELECT * FROM chess_table_depth_20` you can get various information for each of the games played. Among others, the database stores information such as: event name, location where games were played, date, round, player names, and the centipawn statistics for each player. Here is sample of our database
+
+|Event                                               |Site                        |Date      |Round|White          |Black             |Result|Movetext                                      |NMoves|white_stats                |black_stats                     |white_average_cp|black_average_cp|
+|----------------------------------------------------|----------------------------|----------|-----|---------------|------------------|------|----------------------------------------------|------|---------------------------|--------------------------------|----------------|----------------|
+|Champions Chess Tour Opera Euro Rapid - Prelims 2021|Chess.com                   |2021.02.07|10   |Carlsen, Magnus|Nakamura, Hikaru  |1-0   |1. d4 Nf6 2. c4 e6...                         |33    |c(`Precise Move` = 0.7...  |c(`Precise Move` = 0....        |19.3030303030303|31.2727272727273|
+|Sinquefield Cup 2022                                |Chess.com                   |2022.09.04|03   |Carlsen, Magnus|Niemann, Hans Moke|0-1   |1. d4 Nf6 2. c4 e6 3. Nc3 Bb4 4. g3 O-O 5.... |57    |c(`Precise Move` = 0.6.... |c(`Precise Move` = 0.7894736....|28.0175438596491|20.4736842105263|
+|Rated Blitz game                                    |https://lichess.org/kOMi8fle|2022.10.21|NA   |Krye_Kuzhinieri|D1stknightmaster  |1-0   |1. e4 e5 2. g3 Nc6 3...                       |51    |c(`Precise Move` = 0.54....|c(`Precise Move` = 0.....       |213.039215686275|223.56862745098 |
+|Casual Correspondence game                          |https://lichess.org/gwhvMXUI|2022.10.25|NA   |Krye_Kuzhinieri|lichess AI level 8|0-1   |1. e4 e5 2....                                |23    |c(`Precise Move` = 0.52....|c(`Precise Move` = 0.826....    |61.0434782608696|13              |
+
+
+Now, let's crunch the data and test the performance of our model. The following is a game I played online on Lichess. I know that I and my opponent haven't cheated and we can use this to test our model. 
 
 <iframe src="https://lichess.org/embed/game/kOMi8fle?theme=auto&bg=auto" width=600 height=397 frameborder=0></iframe>
 
@@ -143,7 +153,7 @@ We can filter the data by running the following query `SELECT * FROM chess_table
 | Black   | 79%        | 12% | 9%| <span style="color:green">**31.27**</span>|
 
 
-The next game is a game where I played against the computer. In this case we want to detect that black cheated. So, we expect a very low **acl**.
+The next match is a game where I played against the computer. In this case we want to detect that black cheated. So, we expect a very low **acl**.
 
 <iframe src="https://lichess.org/embed/game/gwhvMXUI?theme=auto&bg=auto" width=600 height=397 frameborder=0></iframe>
 
