@@ -10,7 +10,7 @@ library(RJDBC)
 # Connect to GridDB
 driver <- JDBC(
   driverClass = "com.toshiba.mwcloud.gs.sql.Driver",
-  classPath = "/usr/share/java/gridstore-jdbc-4.6.0.jar"
+  classPath = "/usr/share/java/gridstore-jdbc-5.1.0.jar"
 )
 conn <- dbConnect(driver, "jdbc:gs://127.0.0.1:20001/myCluster/public", "admin", "admin")
 
@@ -83,14 +83,6 @@ calculateEngineCentipawnLoss <- function(
   white_average_cp <- abs(mean(game_results$white_difference))
   black_average_cp <- abs(mean(game_results$black_difference))
   
-  print("White Percentages")
-  print(white_percentages)
-  print(white_average_cp)
-  
-  print("Black Percentages")
-  print(black_percentages)
-  print(black_average_cp)
-  
   return(
     list(
       all_data = game_results,
@@ -103,21 +95,20 @@ calculateEngineCentipawnLoss <- function(
 }
 
 engine_path <- "/usr/games/stockfish"
-list_of_games_to_analyze <- c(
-  "Data/normal_game.pgn",
-  "Data/stockfish8.pgn",
-  "Data/carlsen_hikaru.pgn",
-  "Data/carlsen_niemann.pgn" 
-)
+
+list_of_games_to_analyze <- list.files("Data")
 
 dbListTables(conn)
 for (i in seq_along(list_of_games_to_analyze)) {
-  game <- read.pgn(con = file(list_of_games_to_analyze[i]), stat.moves = F, extract.moves = 0)
-  game_lan <- san2lan(game$Movetext[1])
-  game_result <- calculateEngineCentipawnLoss(lan = game_lan, engine_path = engine_path, engine_depth = 20)
-  game$white_stats <- list(game_result$white_results)
-  game$black_stats <- list(game_result$black_results)
-  game$white_average_cp <- game_result$white_average_cp
-  game$black_average_cp <- game_result$black_average_cp
-  dbWriteTable(conn, "chess_table_depth_20", game, append = T)
+  game <- read.pgn(con = file(paste0("Data/", list_of_games_to_analyze[i])), stat.moves = F, extract.moves = 0)
+  for (j in seq_len(nrow(game))) {
+    sub_game <- game[j, ]
+    game_lan <- san2lan(sub_game$Movetext[1])
+    game_result <- calculateEngineCentipawnLoss(lan = game_lan, engine_path = engine_path, engine_depth = 20)
+    sub_game$white_stats <- list(game_result$white_results)
+    sub_game$black_stats <- list(game_result$black_results)
+    sub_game$white_average_cp <- game_result$white_average_cp
+    sub_game$black_average_cp <- game_result$black_average_cp
+    dbWriteTable(conn, "chess_table_depth_20", sub_game, append = T)
+  }
 }

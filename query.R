@@ -4,7 +4,7 @@ library(ggplot2)
 # Connect to GridDB
 driver <- JDBC(
   driverClass = "com.toshiba.mwcloud.gs.sql.Driver",
-  classPath = "/usr/share/java/gridstore-jdbc-4.6.0.jar"
+  classPath = "/usr/share/java/gridstore-jdbc-5.1.0.jar"
 )
 conn <- dbConnect(driver, "jdbc:gs://127.0.0.1:20001/myCluster/public", "admin", "admin")
 
